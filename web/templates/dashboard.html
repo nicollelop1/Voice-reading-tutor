@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Mis perfiles{% endblock %}
+{% block content %}
+<h1>Perfiles de lectura</h1>
+{% if cards %}
+<div class="grid">
+  {% for c in cards %}
+  <div class="card">
+    <h2>{{ c.alias }}</h2>
+    <p>Sesiones: {{ c.sessions }}</p>
+    <p>
+      {% if c.weak %}Palabras a practicar:<br>
+        {% for w, n in c.weak %}<span class="tag">{{ w }} ×{{ n }}</span>{% endfor %}
+      {% else %}Sin palabras difíciles todavía.{% endif %}
+    </p>
+    <a class="btn" href="/profiles/{{ c.id }}">Abrir</a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><p>Aún no hay perfiles. Crea el primero para empezar.</p></div>
+{% endif %}
+<p><a class="btn" href="/profiles/new">+ Nuevo perfil</a></p>
+{% endblock %}

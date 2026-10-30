@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Nuevo perfil{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Nuevo perfil de lectura</h1>
+  <p class="hint">Usa un apodo, no el nombre completo del niño. Solo pedimos el año de nacimiento.</p>
+  {% include "_errors.html" %}
+  <form method="post" action="/profiles/new">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Apodo
+      <input name="alias" value="{{ form.alias or '' }}" required maxlength="30">
+    </label>
+    <label>Año de nacimiento
+      <input type="number" name="birth_year" value="{{ form.birth_year or '' }}" required min="1926" max="2026">
+    </label>
+    <button>Crear perfil</button>
+    <a href="/dashboard">Cancelar</a>
+  </form>
+</section>
+{% endblock %}

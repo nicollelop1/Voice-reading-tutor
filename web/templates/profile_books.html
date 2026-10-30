@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Libros de {{ profile.alias }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>📚 Biblioteca de: <span class="text-primary">{{ profile.alias }}</span></h2>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm p-3">
+                <h4>Subir Nuevo Libro</h4>
+                <form action="/profiles/{{ profile.id }}/books/upload" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="book_file" class="form-label">Selecciona archivo (PDF, TXT, EPUB):</label>
+                        <input type="file" class="form-control" id="book_file" name="book_file" accept=".pdf,.txt,.epub" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Subir y Guardar</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow-sm p-3">
+                <h4>Libros Almacenados</h4>
+                {% if books %}
+                    <ul class="list-group mt-2">
+                        {% for book in books %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span> {{ book }}</span>
+                                <a href="/profiles/{{ profile.id }}/tutor?book={{ book }}" class="btn btn-sm btn-success">Practicar este libro</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mt-2">No hay libros subidos todavía. Sube uno para comenzar.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="/profiles/{{ profile.id }}" class="btn btn-secondary">← Volver al Perfil</a>
+    </div>
+</div>
+{% endblock %}

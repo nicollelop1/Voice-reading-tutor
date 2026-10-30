@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Crear cuenta{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Crear cuenta</h1>
+  <p class="hint">La cuenta es para un adulto (padre, madre, docente o representante legal).
+     Después se crean los perfiles de lectura de los niños, que solo usan un apodo.</p>
+  {% include "_errors.html" %}
+  <form method="post" action="/register">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Nombre completo
+      <input name="full_name" value="{{ form.full_name or '' }}" required maxlength="100" autocomplete="name">
+    </label>
+    <label>Correo electrónico
+      <input type="email" name="email" value="{{ form.email or '' }}" required autocomplete="email">
+    </label>
+    <label>Contraseña (mínimo 8 caracteres)
+      <input type="password" name="password" required minlength="8" maxlength="128" autocomplete="new-password">
+    </label>
+    <label>Repite la contraseña
+      <input type="password" name="password2" required minlength="8" maxlength="128" autocomplete="new-password">
+    </label>
+    <label class="check">
+      <input type="checkbox" name="consent" value="1" required>
+      <span>Soy mayor de edad y autorizo el tratamiento de los datos de la cuenta y de los
+      perfiles de lectura para el funcionamiento de esta aplicación.</span>
+    </label>
+    <button>Crear cuenta</button>
+  </form>
+  <p class="hint">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
+</section>
+{% endblock %}

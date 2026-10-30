@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Progresos de {{ profile.alias }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Mis Progresos e Historial: <span class="text-primary">{{ profile.alias }}</span></h2>
+    <p class="text-muted">Análisis pedagógicos acumulativos por sesión y grafo de conocimiento personalizado.</p>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm p-3 h-100">
+                <h4> Palabras con Dificultad</h4>
+                <p class="text-muted small">Patrones recurrentes (ej. palabras con 'r' o pausas prolongadas):</p>
+                <div>
+                    {% if weak %}
+                        {% for w, n in weak %}
+                            <span class="badge bg-danger me-1 mb-1 fs-6">{{ w }} (×{{ n }})</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-success">¡Excelente! No hay dificultades recurrentes registradas todavía.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-3">
+            <div class="card shadow-sm p-3 h-100">
+                <h4> Registro de Sesiones en el Vault</h4>
+                <p class="text-muted small">Cada sesión crea un nuevo análisis acumulativo en Obsidian (no se sobrescribe):</p>
+                {% if sessions %}
+                    {% for ses in sessions %}
+                    <details class="mt-2" style="background:#f7f5ff;border-radius:12px;padding:10px 14px;margin-top:10px">
+                        <summary style="cursor:pointer;font-weight:700">📄 {{ ses.name }}</summary>
+                        <pre style="white-space:pre-wrap;font-family:inherit;font-size:.95rem;margin:10px 0 0">{{ ses.body }}</pre>
+                    </details>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Aún no hay sesiones guardadas para este perfil.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="/profiles/{{ profile.id }}" class="btn btn-secondary">← Volver al Perfil</a>
+    </div>
+</div>
+{% endblock %}

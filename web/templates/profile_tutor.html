@@ -1,0 +1,687 @@
+{% extends "base.html" %}
+{% block title %}Tutor de Voz - {{ profile.alias }}{% endblock %}
+{% block content %}
+<style>
+  .tutor {
+    max-width: 760px;
+    margin: 24px auto;
+    padding: 0 16px;
+  }
+
+  .tutor .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 6px 24px rgba(60, 40, 120, .12);
+    margin-bottom: 20px;
+  }
+
+  .tutor select {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid #d9d0ff;
+    margin: 8px 0 14px;
+  }
+
+  .tutor .row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tutor .row>* {
+    flex: 1 1 200px;
+  }
+
+  .tbtn {
+    border: 0;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    background: var(--brand);
+  }
+
+  .tbtn:disabled {
+    background: #b9b2d6;
+    cursor: not-allowed;
+  }
+
+  .tbtn.rec {
+    background: #8e44ad;
+  }
+
+  .tbtn.live {
+    background: #e74c3c;
+    animation: pulse 1.1s infinite;
+  }
+
+  .tbtn.stop {
+    background: var(--warn);
+  }
+
+  .tbtn.ghost {
+    background: #6c757d;
+    text-decoration: none;
+    text-align: center;
+    display: block;
+  }
+
+  @keyframes pulse {
+    50% {
+      box-shadow: 0 0 0 10px rgba(231, 76, 60, .18);
+    }
+  }
+
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .bar h3 {
+    margin: 0;
+  }
+
+  .badge2 {
+    background: #e3dcff;
+    color: var(--brand-dark);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: .9rem;
+    font-weight: 700;
+  }
+
+  .stage {
+    background: #f7f5ff;
+    border: 2px dashed #d9d0ff;
+    border-radius: 16px;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .stage p {
+    font-size: 1.5rem;
+    text-align: center;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .stage.me {
+    background: #fff8e6;
+    border-color: #f5b041;
+  }
+
+  .bookbar {
+    background: linear-gradient(135deg, #6c4ce0, #9b6bff);
+    color: #fff;
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+  }
+
+  .bookbar .t {
+    font-size: 1.15rem;
+    font-weight: 800;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .bookbar .track {
+    background: rgba(255, 255, 255, .3);
+    border-radius: 999px;
+    height: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .bookbar .fill {
+    background: #ffe066;
+    height: 100%;
+    width: 0;
+    transition: width .4s;
+  }
+
+  .stage p .w {
+    padding: 1px 3px;
+    border-radius: 6px;
+    transition: background .12s;
+  }
+
+  .stage p .w.cur {
+    background: #fff3b0;
+  }
+
+  .stage p .w.now {
+    background: #ffd43b;
+    color: #3b2f00;
+    font-weight: 700;
+  }
+
+  .stage p .w.ok {
+    color: #1e8449;
+  }
+
+  .stage p .w.bad {
+    background: #fdecea;
+    color: #c0392b;
+    text-decoration: underline wavy #e74c3c;
+    font-weight: 700;
+  }
+
+  .stage p .w.skip {
+    background: #fff3e0;
+    color: #b9770e;
+    border-bottom: 2px dashed #f39c12;
+    font-weight: 700;
+  }
+
+  .diag {
+    background: #fffaf0;
+    border: 2px solid #f5cba7;
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+
+  .diag .agent {
+    background: #e8f8f5;
+    border-left: 4px solid #1abc9c;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 10px 0 0;
+    color: #0b5345;
+  }
+
+  .diag h4 {
+    margin: 0 0 8px;
+  }
+
+  .diag ul {
+    margin: 6px 0 0;
+    padding-left: 20px;
+  }
+
+  .diag li {
+    margin: 6px 0;
+  }
+
+  .diag .syl {
+    background: #e8f8f5;
+    color: #117a65;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+
+  .diag .heard {
+    color: #6b6585;
+    font-style: italic;
+    margin: 6px 0 0;
+  }
+
+  .voicebox {
+    background: #f7f5ff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 4px 0 14px;
+  }
+
+  .voicebox label {
+    font-weight: 700;
+    display: block;
+  }
+
+  .voicebox input[type=range] {
+    width: 100%;
+  }
+
+  .hint {
+    text-align: center;
+    color: #6b6585;
+    margin-top: 10px;
+    min-height: 1.5em;
+  }
+</style>
+
+<div class="tutor" id="tutor-root" data-csrf="{{ csrf }}" data-alias="{{ profile.alias }}"
+  data-profile="{{ profile.id }}">
+  <h2>Tutor de Voz: <span style="color:var(--brand)">{{ profile.alias }}</span></h2>
+
+  <div class="card" id="setup">
+    <p>⚠️ Verifica que tu micrófono esté activo. Funciona mejor en Google Chrome o Edge.</p>
+    <label for="book"><strong>Elige un libro:</strong></label>
+    <select id="book">
+      <option value="">-- Elige un libro de la biblioteca --</option>
+      {% for b in books %}
+      <option value="{{ b }}" {% if selected_book==b %}selected{% endif %}>{{ b }}</option>
+      {% endfor %}
+    </select>
+    <div class="voicebox">
+      <label for="voice">🗣️ Voz del tutor</label>
+      <select id="voice" style="margin-bottom:8px"></select>
+      <label for="speed">🐢 Velocidad: <span id="speed-val"></span></label>
+      <input type="range" id="speed" min="0.6" max="1.1" step="0.05" value="0.85">
+      <button class="tbtn" id="test-voice" type="button" style="width:100%;margin-top:10px;background:#f39c12">🔊 Probar
+        voz</button>
+    </div>
+    <button class="tbtn" id="start-btn" style="width:100%">🚀 Comenzar sesión</button>
+  </div>
+
+  <div class="card" id="session" hidden>
+    <div class="bookbar">
+      <div class="t"><span>📚 <span id="book-title"></span></span><span id="prog-text"></span></div>
+      <div class="track">
+        <div class="fill" id="prog-fill"></div>
+      </div>
+    </div>
+    <div class="bar">
+      <h3 id="status">📖 Preparando…</h3>
+      <span class="badge2" id="attempt-badge" hidden>Intento 1 de 2</span>
+    </div>
+    <div class="stage" id="stage">
+      <p id="text-box"></p>
+    </div>
+    <div class="diag" id="diag" hidden></div>
+    <div class="row">
+      <button class="tbtn rec" id="record-btn" disabled>⏳ Espera tu turno…</button>
+      <button class="tbtn stop" id="finish-btn">🛑 Terminar y guardar</button>
+    </div>
+    <div class="hint" id="hint"></div>
+  </div>
+
+  <a class="tbtn ghost" href="/profiles/{{ profile.id }}">← Volver al perfil</a>
+</div>
+
+<script>
+  const ROOT = document.getElementById("tutor-root");
+  const CSRF = ROOT.dataset.csrf;
+  const ALIAS = ROOT.dataset.alias;
+  const PROFILE_ID = ROOT.dataset.profile;
+  const BASE = "/profiles/" + PROFILE_ID + "/tutor";
+  const $ = id => document.getElementById(id);
+
+  let run = 0;              // se incrementa al terminar: cancela cualquier turno pendiente
+  let listening = false, recog = null, buffer = "", expected = "";
+  const keep = [];          // evita que Chrome recoja las locuciones antes de terminar
+
+  /* ---------- voz del agente (síntesis) ---------- */
+  const PREF = {
+    get(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+  };
+  const FRIENDLY = /sonia|dalia|elvira|paulina|helena|laura|sabina|luc[ií]a|m[oó]nica|salom[eé]|elena|camila|natural|google espa/i;
+
+  function esVoices() {
+    const score = x => (/natural|neural|online/i.test(x.name) ? 4 : 0) + (FRIENDLY.test(x.name) ? 3 : 0)
+      + (/google/i.test(x.name) ? 1 : 0) + (/es-(co|mx|us|419)/i.test(x.lang) ? 1 : 0);
+    return speechSynthesis.getVoices().filter(x => x.lang.toLowerCase().startsWith("es")).sort((a, b) => score(b) - score(a));
+  }
+  function fillVoices() {
+    const sel = $("voice"), list = esVoices(), saved = PREF.get("tutorVoice", "");
+    sel.innerHTML = "";
+    if (!list.length) { sel.innerHTML = "<option value=''>Voz por defecto del navegador</option>"; return; }
+    list.forEach((v, i) => {
+      const o = document.createElement("option");
+      o.value = v.voiceURI;
+      o.textContent = (i === 0 ? "⭐ " : "") + v.name + " (" + v.lang + ")";
+      sel.appendChild(o);
+    });
+    sel.value = list.some(v => v.voiceURI === saved) ? saved : list[0].voiceURI;
+  }
+  function pickVoice() {
+    const list = esVoices();
+    return list.find(v => v.voiceURI === $("voice").value) || list[0] || null;
+  }
+  function speed() { return parseFloat($("speed").value) || 0.85; }
+  speechSynthesis.onvoiceschanged = fillVoices;
+  fillVoices();
+  $("speed").value = PREF.get("tutorSpeed", "0.85");
+  const showSpeed = () => { $("speed-val").textContent = speed() <= 0.7 ? "muy lenta" : speed() <= 0.9 ? "tranquila" : "normal"; };
+  showSpeed();
+  $("voice").addEventListener("change", () => { PREF.set("tutorVoice", $("voice").value); });
+  $("speed").addEventListener("input", () => { PREF.set("tutorSpeed", $("speed").value); showSpeed(); });
+
+  // Tonos: la voz se agudiza un poco y sube de ánimo al felicitar
+  const TONE = { story: { pitch: 1.15, rate: 1.0 }, cue: { pitch: 1.25, rate: 1.0 }, praise: { pitch: 1.35, rate: 1.08 } };
+
+  let words = [];           // palabras que se muestran en pantalla (para resaltar mientras se narra)
+  function renderText(text) {
+    const box = $("text-box");
+    box.textContent = "";
+    words = [];
+    const re = /\S+/g;
+    let m;
+    while ((m = re.exec(text || ""))) {
+      const el = document.createElement("span");
+      el.className = "w";
+      el.textContent = m[0];
+      box.appendChild(el);
+      box.appendChild(document.createTextNode(" "));
+      words.push({ el, start: m.index, end: m.index + m[0].length });
+    }
+  }
+  function mark(cls, from, to) {                       // resalta las palabras entre dos posiciones del texto
+    words.forEach(w => w.el.classList.toggle(cls, w.start >= from && w.start < to));
+  }
+
+  function say(text, opts = {}) {
+    // Habla frase por frase (Chrome corta las locuciones largas) y resuelve al terminar.
+    // opts.highlight: el texto ya está en pantalla → resalta la frase y la palabra que suena.
+    return new Promise(resolve => {
+      const myRun = run;
+      const tone = opts.tone || TONE.story;
+      const parts = [];
+      const re = /[^.!?¡¿]+[.!?]*/g;
+      let m;
+      while ((m = re.exec(text))) {
+        const lead = m[0].length - m[0].trimStart().length;
+        const t = m[0].trim();
+        if (t) parts.push({ t, start: m.index + lead, end: m.index + lead + t.length });
+      }
+      if (!parts.length) parts.push({ t: text, start: 0, end: text.length });
+      speechSynthesis.cancel();
+      let i = 0;
+      const done = () => { if (opts.highlight) { mark("cur", 0, 0); mark("now", 0, 0); } resolve(); };
+      const next = () => {
+        if (myRun !== run || i >= parts.length) return done();
+        const part = parts[i++];
+        const u = new SpeechSynthesisUtterance(part.t);
+        const voice = pickVoice();
+        if (voice) u.voice = voice;
+        u.lang = voice ? voice.lang : "es-ES";
+        u.rate = Math.min(1.3, speed() * tone.rate);
+        u.pitch = tone.pitch;
+        if (opts.highlight) {
+          mark("cur", part.start, part.end);
+          u.onboundary = ev => {
+            if (ev.name && ev.name !== "word") return;
+            const g = part.start + ev.charIndex;
+            words.forEach(w => w.el.classList.toggle("now", g >= w.start && g < w.end));
+          };
+        }
+        u.onend = next;
+        u.onerror = next;
+        keep.push(u);
+        if (keep.length > 20) keep.shift();
+        speechSynthesis.speak(u);
+      };
+      next();
+    });
+  }
+
+  /* ---------- pantalla ---------- */
+  function show(status, text, mine) {
+    $("status").textContent = status;
+    renderText(text);
+    $("diag").hidden = true;
+    $("stage").classList.toggle("me", !!mine);
+  }
+  function esc(t) { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+  function showDiagnosis(d) {
+    // Pinta el texto: verde = bien, rojo = dijo otra cosa, naranja = se saltó
+    words.forEach((w, i) => {
+      const m = d.marks[i];
+      if (!m || m.s === "na") return;                 // guiones y signos sueltos no se colorean
+      w.el.classList.remove("cur", "now");
+      w.el.classList.add(m.s === "ok" ? "ok" : m.s === "wrong" ? "bad" : "skip");
+      if (m.s === "wrong") w.el.title = "Dijiste «" + m.said + "»";
+    });
+    const box = $("diag");
+    let h = "<h4>🔎 Así leíste: " + d.good + " de " + d.total + " palabras bien (" + Math.round(d.accuracy * 100) + " %)</h4>";
+    if (d.issues.length) {
+      h += "<ul>" + d.issues.slice(0, 6).map(i =>
+        "<li>" + esc(i.text.charAt(0).toUpperCase() + i.text.slice(1)) +
+        (i.syllables && i.syllables.includes("-") ? ' <span class="syl">' + esc(i.syllables) + "</span>" : "") + "</li>").join("") + "</ul>";
+      if (d.issues.length > 6) h += "<div class='heard'>…y " + (d.issues.length - 6) + " más.</div>";
+    }
+    if (d.heard) h += "<p class='heard'>Lo que escuché: «" + esc(d.heard.length > 160 ? d.heard.slice(0, 160) + "…" : d.heard) + "»</p>";
+    box.innerHTML = h;
+    box.hidden = false;
+  }
+  function clearDiagnosis() {
+    words.forEach(w => w.el.classList.remove("ok", "bad", "skip"));
+    $("diag").hidden = true;
+  }
+
+  function showAgent(text) {
+    if (!text) return;
+    const box = $("diag");
+    box.insertAdjacentHTML("beforeend", "<p class='agent'><b>Análisis del tutor:</b> " + esc(text) + "</p>");
+    box.hidden = false;
+  }
+
+  function setProgress(pos, total) {
+    if (!total) return;
+    $("prog-text").textContent = "Parte " + Math.min(pos, total) + " de " + total;
+    $("prog-fill").style.width = Math.round(100 * Math.min(pos, total) / total) + "%";
+  }
+  function setBtn(label, cls, enabled) {
+    const b = $("record-btn");
+    b.textContent = label;
+    b.className = "tbtn " + cls;
+    b.disabled = !enabled;
+  }
+  function setAttempt(n) {
+    const b = $("attempt-badge");
+    b.hidden = !n;
+    if (n) b.textContent = `Intento ${n} de 2`;
+  }
+  async function api(path, body = {}) {
+    const r = await fetch(BASE + path, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ csrf: CSRF, ...body })
+    });
+    if (r.status === 409) { location.reload(); throw new Error("sesión perdida"); }
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+    return r.json();
+  }
+
+  /* ---------- ciclo de turnos ---------- */
+  async function begin() {
+    const book = $("book").value;
+    if (!book) { alert("Primero elige un libro."); return; }
+    $("start-btn").disabled = true;
+    try {
+      const info = await api("/start", { book });
+      $("setup").hidden = true;
+      $("session").hidden = false;
+      const myRun = run;
+      $("book-title").textContent = info.book_title;
+      setProgress(0, info.fragments);
+      show(" Saludo", info.greeting, false);
+      if (info.skipped_words > 0) $("hint").textContent = "Empezamos en: «" + info.starts_with + "…»";
+      await say(info.greeting, { highlight: true, tone: TONE.cue });
+      if (myRun === run) nextTurn();
+    } catch (e) {
+      $("start-btn").disabled = false;
+      alert("No se pudo iniciar: " + e.message);
+    }
+  }
+
+  async function nextTurn() {
+    const myRun = run;
+    setAttempt(0);
+    setBtn(" Escucha al agente…", "rec", false);
+    const t = await api("/next");
+    if (myRun !== run) return;
+
+    setProgress(t.position, t.total);
+    if (t.role === "narrate") {
+      show(" Escucha el cuento", t.text, false);
+      $("hint").textContent = "Escucha con atención y sigue las palabras con los ojos…";
+      await say(t.text, { highlight: true });
+      if (myRun === run) nextTurn();               // al terminar cede la palabra
+    } else if (t.role === "user_read") {
+      expected = t.text;
+      show("🗣️ Tu turno: lee en voz alta", t.text, true);
+      setAttempt(1);
+      let cue = `Ahora te toca leer a ti, ${ALIAS}.`;
+      if (t.watch_words && t.watch_words.length) cue += " Ojo con la palabra " + t.watch_words.join(", ") + ".";
+      $("hint").textContent = "";
+      await say(cue, { tone: TONE.cue });
+      if (myRun === run) readyToRecord(" Empezar a grabar");
+    } else if (t.role === "end") {
+      show(" ¡Terminamos!", "El agente está preparando el análisis final...", false);
+
+      // 1. Pedimos el análisis al servidor (esto ejecuta run_analysis en el vault)
+      let sessionSummary = "¡Lo lograste, Mark!";
+      try {
+        const r = await api("/finish");
+        if (r.summary) {
+          sessionSummary = r.summary;
+        } else if (r.narrative) {
+          sessionSummary = r.narrative;
+        }
+      } catch (e) {
+        console.error("Error al finalizar:", e);
+      }
+
+      // 2. Mostramos el mensaje en pantalla para que Mark lo vea
+      show("🎉 ¡Libro terminado!", sessionSummary, false);
+      $("hint").textContent = "El tutor te está leyendo el resumen final...";
+
+      // 3. OBLIGAMOS a que el tutor hable y lea el análisis antes de cambiar de página
+      let bye = `¡Excelente trabajo, Mark! Has terminado el libro completo. Escucha el resumen: ${sessionSummary}`;
+      await say(bye, { tone: TONE.praise });
+
+      // 4. Esperamos 2 segundos adicionales tras terminar de hablar y luego guardamos/cambiamos
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      if (myRun === run) {
+        $("hint").textContent = "Guardado en Obsidian con éxito.";
+        setTimeout(() => location.href = "/profiles/" + PROFILE_ID + "/history", 500);
+      }
+    }
+  }
+  function readyToRecord(label) {
+    setBtn(label, "rec", true);
+  }
+
+  /* ---------- grabación (se detiene con el botón) ---------- */
+  function toggleRecord() {
+    if (listening) return stopRecording();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Tu navegador no soporta reconocimiento de voz. Usa Google Chrome o Edge."); return; }
+    speechSynthesis.cancel();
+    buffer = "";
+    recog = new SR();
+    recog.lang = "es-ES";
+    recog.continuous = true;          // no se corta solo: el niño decide cuándo parar
+    recog.interimResults = true;
+    let interim = "";
+    recog.onresult = ev => {
+      interim = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const tx = ev.results[i][0].transcript;
+        if (ev.results[i].isFinal) buffer += tx + " "; else interim += tx;
+      }
+      $("hint").textContent = "Oí: " + (buffer + interim).trim();
+    };
+    recog.onerror = ev => {
+      if (ev.error === "not-allowed" || ev.error === "service-not-allowed") {
+        listening = false;
+        setBtn("🎙️ Empezar a grabar", "rec", true);
+        alert("Permite el acceso al micrófono en el navegador.");
+      }
+    };
+    recog.onend = () => {
+      if (listening) { try { recog.start(); } catch (e) { } return; }   // Chrome corta por silencio: seguimos
+    };
+    listening = true;
+    recog.start();
+    setBtn(" Detener y enviar", "live", true);
+    $("hint").textContent = "Escuchando… lee en voz alta y pulsa el botón al terminar.";
+  }
+
+  function stopRecording() {
+    listening = false;
+    setBtn("⏳ Analizando tu lectura…", "rec", false);
+    const r = recog;
+    let sent = false;
+    const send = () => { if (!sent) { sent = true; submit((buffer).trim()); } };
+    r.onend = send;
+    try { r.stop(); } catch (e) { }
+    setTimeout(send, 1200);           // por si el navegador no dispara onend
+  }
+
+  /* ---------- evaluación real (src/evaluate.py + regla de 2 intentos) ---------- */
+  /* ---------- evaluación real (src/evaluate.py + agente autónomo) ---------- */
+  async function submit(transcript) {
+    const myRun = run;
+    $("hint").textContent = transcript ? "Oí: " + transcript : "No escuché nada.";
+    const r = await api("/check", { transcript });
+    if (myRun !== run) return;
+
+    if (r.verdict === "correct") {
+      $("diag").innerHTML = "";
+      showAgent(r.analysis);
+      const phrase = r.say || r.problems || (r.attempt === 1 ? "¡Excelente lectura!" : "¡Muy bien, lo lograste!");
+      await say(phrase, { tone: TONE.praise });
+      if (myRun === run) nextTurn();
+    } else if (r.verdict === "retry") {
+      setAttempt(2);
+      showDiagnosis(r.diagnosis);
+      showAgent(r.analysis);
+
+      // Aquí unimos el mensaje corto con el análisis del agente para que el tutor lo lea todo
+      const message = r.problems || `Casi, ${ALIAS}.`;
+      const fullSpeech = `${message} ${r.analysis || ''} Inténtalo una vez más.`;
+
+      await say(fullSpeech, { tone: TONE.cue });
+      if (myRun === run) readyToRecord("Grabar segundo intento");
+    } else if (r.verdict === "final_correction") {
+      show("Así se lee", r.correct_text, false);
+      showDiagnosis(r.diagnosis);
+      showAgent(r.analysis);
+
+      const message = r.problems || `No te preocupes, ${ALIAS}, ¡lo estás intentando!`;
+      await say(`${message} ${r.analysis || ''} Ahora escucha cómo se lee todo junto:`, { tone: TONE.cue });
+      clearDiagnosis();
+      await say(r.correct_text, { highlight: true });
+      if (myRun === run) nextTurn();
+      // sigue para evitar frustración
+    } else {                                        // no_audio (no cuenta como intento)
+      await say(`No te escuché, ${ALIAS}. Pulsa el botón y lee de nuevo.`, { tone: TONE.cue });
+      if (myRun === run) readyToRecord("Empezar a grabar");
+    }
+  }
+
+  async function finish(manual) {
+    run++;                                          // cancela voz y turnos pendientes
+    speechSynthesis.cancel();
+    listening = false;
+    try { recog && recog.stop(); } catch (e) { }
+    $("finish-btn").disabled = true;
+    try {
+      const r = await api("/finish");
+      $("hint").textContent = r.saved ? "Sesión guardada en el vault de Obsidian." : "No hubo lecturas que guardar.";
+    } catch (e) {
+      $("hint").textContent = "No se pudo guardar: " + e.message;
+      $("finish-btn").disabled = false;
+      return;
+    }
+    setTimeout(() => location.href = "/profiles/" + PROFILE_ID + "/history", 1200);
+  }
+
+  $("test-voice").addEventListener("click", () => say("¡Hola! Soy tu tutor de lectura. ¡Vamos a leer juntos un cuento!", { tone: TONE.praise }));
+  $("start-btn").addEventListener("click", begin);       // el clic permite que el navegador deje hablar
+  $("record-btn").addEventListener("click", toggleRecord);
+  $("finish-btn").addEventListener("click", () => finish(true));
+</script>
+{% endblock %}
